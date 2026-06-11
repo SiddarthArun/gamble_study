@@ -528,3 +528,239 @@ body {
 .todo-del:hover {
   color: #ff3399;
 }
+
+/* FLOATING RAIN BUTTON */
+.floating-rain-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 32px;
+  height: 32px;
+  background: var(--container-bg);
+  border: 1px solid var(--container-border);
+  border-radius: 50%;
+  color: var(--neon-blue);
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.floating-rain-btn:hover {
+  background: #20222a;
+  transform: scale(1.1);
+  border-color: var(--neon-blue);
+}
+
+/* SIDEBAR STYLES */
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 100%;
+  background: rgba(21, 22, 28, 0.98);
+  border-left: 1px solid var(--container-border);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--container-border);
+}
+
+.sidebar-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--text-primary);
+}
+
+.sidebar-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.sidebar-close-btn:hover {
+  color: var(--neon-pink);
+}
+
+.sidebar-content {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.ambient-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ambient-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+/* SLEEK TOGGLE SWITCH */
+.switch-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #07080b;
+  border: 1px solid var(--container-border);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+}
+
+.switch-status {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+.switch-status.active {
+  color: var(--neon-green);
+  text-shadow: 0 0 8px rgba(0, 255, 102, 0.3);
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--container-border);
+  transition: .3s;
+  border-radius: 20px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--text-primary);
+  transition: .3s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--neon-green);
+  box-shadow: 0 0 8px rgba(0, 255, 102, 0.3);
+}
+
+input:checked + .slider:before {
+  transform: translateX(16px);
+  background-color: #07080b;
+}
+
+/* SLEEK VOLUME SLIDER */
+.volume-slider-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #07080b;
+  border: 1px solid var(--container-border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+}
+
+.volume-icon {
+  font-size: 12px;
+}
+
+.volume-range {
+  flex: 1;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--container-border);
+  outline: none;
+  border-radius: 2px;
+}
+
+.volume-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--neon-blue);
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(0, 240, 255, 0.4);
+  transition: transform 0.1s ease;
+}
+
+.volume-range::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.volume-percentage {
+  text-align: right;
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(1px);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}

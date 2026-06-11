@@ -54,16 +54,75 @@ document.addEventListener("DOMContentLoaded", () => {
   const todoInput = document.getElementById("todo-input");
   const todoList = document.getElementById("todo-list");
 
+  // Rain Sidebar elements
+  const rainSidebar = document.getElementById("rain-sidebar");
+  const rainSidebarOverlay = document.getElementById("rain-sidebar-overlay");
+  const rainFloatingBtn = document.getElementById("floating-rain-btn");
+  const rainCloseBtn = document.getElementById("sidebar-close-btn");
+  const rainToggle = document.getElementById("rain-toggle");
+  const rainStatusText = document.getElementById("rain-status-text");
+  const rainVolume = document.getElementById("rain-volume");
+  const volumePct = document.getElementById("volume-pct");
+
+  // Sidebar logic
+  function toggleRainSidebar(open) {
+    rainSidebar.classList.toggle("open", open);
+    rainSidebarOverlay.classList.toggle("open", open);
+  }
+
+  rainFloatingBtn.addEventListener("click", () => toggleRainSidebar(true));
+  rainCloseBtn.addEventListener("click", () => toggleRainSidebar(false));
+  rainSidebarOverlay.addEventListener("click", () => toggleRainSidebar(false));
+
+  function updateRainUI(playing, volume) {
+    rainToggle.checked = playing;
+    rainStatusText.textContent = playing ? "ON" : "OFF";
+    rainStatusText.classList.toggle("active", playing);
+    rainVolume.value = volume * 100;
+    volumePct.textContent = `${Math.round(volume * 100)}%`;
+  }
+
+  rainToggle.addEventListener("change", (e) => {
+    console.log('Toggling rain:', e.target.checked);
+    chrome.storage.local.set({ rainPlaying: e.target.checked });
+  });
+
+  rainVolume.addEventListener("input", (e) => {
+    console.log('Changing volume:', e.target.value);
+    const volume = e.target.value / 100;
+    chrome.storage.local.set({ rainVolume: volume });
+    volumePct.textContent = `${Math.round(volume * 100)}%`;
+  });
+
   // Load Initial State
-  chrome.storage.local.get(["timerState", "endTime", "studyMinutes", "breakMinutes", "tasks"], (data) => {
+  chrome.storage.local.get(["timerState", "endTime", "studyMinutes", "breakMinutes", "tasks", "rainPlaying", "rainVolume"], (data) => {
     if (data.timerState) timerState = data.timerState;
     if (data.endTime) endTime = data.endTime;
     if (data.studyMinutes) studyMinutes = data.studyMinutes;
     if (data.breakMinutes) breakMinutes = data.breakMinutes;
     if (data.tasks) tasks = data.tasks;
-
+    
     updateTimerUI(spinBtn, reel1, reel2, reel3, tickerMsg, timerSection, timerClock);
     renderTasks(todoList);
+    updateRainUI(!!data.rainPlaying, data.rainVolume !== undefined ? data.rainVolume : 0.5);
+  });
+
+  // Sync UI on storage change
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "local") {
+      if (changes.rainPlaying || changes.rainVolume) {
+        chrome.storage.local.get(['rainPlaying', 'rainVolume'], (data) => {
+          updateRainUI(!!data.rainPlaying, data.rainVolume !== undefined ? data.rainVolume : 0.5);
+        });
+      }
+      
+      if (changes.timerState) timerState = changes.timerState.newValue;
+      if (changes.endTime) endTime = changes.endTime.newValue;
+      if (changes.studyMinutes) studyMinutes = changes.studyMinutes.newValue;
+      if (changes.breakMinutes) breakMinutes = changes.breakMinutes.newValue;
+      if (changes.tasks) { tasks = changes.tasks.newValue; renderTasks(todoList); }
+      updateTimerUI(spinBtn, reel1, reel2, reel3, tickerMsg, timerSection, timerClock);
+    }
   });
 
   spinBtn.addEventListener("click", () => {
