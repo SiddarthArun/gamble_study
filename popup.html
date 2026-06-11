@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>StudyRoulette</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="casino-header">
+      <h1 class="glitch-title">STUDY ROULETTE</h1>
+      <p class="subtitle">HIGH VOLATILITY POMODORO</p>
+      <div class="mode-toggle">
+        <button id="mode-switch" class="reset-btn">MODE: SLOTS</button>
+      </div>
+    </header>
+
+    <!-- Slots Container -->
+    <div id="slots-container" class="game-container">
+      <!-- Slot Machine Reels -->
+      <div class="slot-machine border-box">
+        <div class="reel-container">
+          <div class="reel-wrapper">
+            <div class="reel-title">R1</div>
+            <div id="reel-1" class="reel">
+              <div class="symbol">?</div>
+              <div class="symbol">?</div>
+              <div class="symbol">?</div>
+            </div>
+          </div>
+          <div class="reel-wrapper">
+            <div class="reel-title">R2</div>
+            <div id="reel-2" class="reel">
+              <div class="symbol">?</div>
+              <div class="symbol">?</div>
+              <div class="symbol">?</div>
+            </div>
+          </div>
+          <div class="reel-wrapper">
+            <div class="reel-title">R3</div>
+            <div id="reel-3" class="reel">
+              <div class="symbol">?</div>
+              <div class="symbol">?</div>
+              <div class="symbol">?</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Flashing Casino Message Board -->
+        <div id="ticker-msg" class="ticker-box">LET IT RIDE!</div>
+        
+        <!-- Spin Button -->
+        <button id="spin-btn" class="spin-btn">SPIN TO WIN</button>
+      </div>
+    </div>
+
+    <!-- Blackjack Container -->
+    <div id="blackjack-container" class="game-container" style="display:none;">
+      <div class="blackjack-area border-box">
+        <div id="dealer-hand" class="hand-container">Dealer: --</div>
+        <div id="player-hand" class="hand-container">Player: --</div>
+        <div class="blackjack-controls">
+          <button id="hit-btn" class="spin-btn">HIT</button>
+          <button id="stay-btn" class="reset-btn">STAY</button>
+        </div>
+        <div id="blackjack-msg" class="ticker-box">DEALER READY</div>
+      </div>
+    </div>
+
+    <!-- Active Countdown Section -->
+    <div id="timer-section" class="timer-section border-box disabled">
+      <div class="section-label">ACTIVE SESSION</div>
+      <div class="timer-display">
+        <span id="timer-phase">IDLE</span>
+        <span id="timer-clock">00:00</span>
+      </div>
+      <button id="reset-btn" class="reset-btn">CASH OUT (RESET)</button>
+    </div>
+
+    <!-- To-Do Section -->
+    <div class="todo-section border-box">
+      <div class="section-label">LOOT LIST (TASKS)</div>
+      <form id="todo-form">
+        <input type="text" id="todo-input" class="todo-input" placeholder="ADD TASK..." required maxlength="40">
+        <button type="submit" class="todo-add-btn">ADD</button>
+      </form>
+      <ul id="todo-list" class="todo-list">
+        <!-- Tasks injected here -->
+      </ul>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

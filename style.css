@@ -1,0 +1,530 @@
+/* SYSTEM THEME VARIABLES */
+:root {
+  --bg-color: #0b0c10;               /* Sleek deep black background */
+  --container-bg: #15161c;           /* Sleek, dark charcoal for container surfaces */
+  --container-border: #22252e;       /* Modern, subtle grey borders */
+  --text-primary: #f3f4f6;           /* Clean soft white */
+  --text-secondary: #9ca3af;         /* Muted, sleek grey for subtitles and labels */
+  --text-muted: #4b5563;             /* Darker grey for inactive/muted states */
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  
+  --radius-lg: 14px;                 /* Smooth, premium rounded edges for major sections */
+  --radius-md: 10px;                 /* Clean rounded edges for buttons and inputs */
+  --radius-sm: 6px;                  /* Delicate rounded edges for cards and status tags */
+  
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  
+  /* Bright, visually appealing casino/gambling accents */
+  --neon-green: #00ff66;             /* Vibrant glowing green for winning/slot reels */
+  --neon-pink: #ff007f;              /* Electric pink for alerts, timer phases, and critical actions */
+  --neon-blue: #00f0ff;              /* Premium cyan for card backing and interactive states */
+  --card-red: #ef4444;               /* Rich crimson red for hearts/diamonds */
+}
+
+/* RESET & BASE */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+}
+
+body {
+  width: 380px;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  padding: 16px;
+  overflow-x: hidden;
+  border: 1px solid var(--container-border);
+}
+
+/* APP CONTAINER */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* HEADER */
+.casino-header {
+  text-align: center;
+  border-bottom: 1px solid var(--container-border);
+  padding-bottom: 14px;
+}
+
+.glitch-title {
+  font-size: 24px;
+  font-weight: 850;
+  letter-spacing: 2.5px;
+  background: linear-gradient(135deg, #ffffff 40%, var(--text-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 10px rgba(255, 255, 255, 0.05);
+  text-transform: uppercase;
+}
+
+.subtitle {
+  font-size: 9px;
+  color: var(--neon-pink);
+  margin-top: 6px;
+  font-weight: 700;
+  letter-spacing: 3.5px;
+  text-transform: uppercase;
+}
+
+/* MODE TOGGLE */
+.mode-toggle {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+#mode-switch {
+  width: 100%;
+}
+
+/* UTILITY BOXES (PANELS) */
+.border-box {
+  background-color: var(--container-bg);
+  border: 1px solid var(--container-border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  position: relative;
+  box-shadow: var(--shadow-md);
+}
+
+.section-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  background-color: var(--container-bg);
+  color: var(--text-secondary);
+  padding: 3px 10px;
+  position: absolute;
+  top: -10px;
+  left: 16px;
+  border: 1px solid var(--container-border);
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+/* SLOTS GAME */
+.slot-machine {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.reel-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #07080b;
+  border: 1px solid var(--container-border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  overflow: hidden;
+  gap: 8px;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.7);
+}
+
+.reel-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.reel-title {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.reel {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--neon-green);
+  background: #111218;
+  border: 1px solid rgba(0, 255, 102, 0.2);
+  border-radius: var(--radius-md);
+  width: 100%;
+  height: 90px; /* Exactly 3 symbols high */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.1s ease-out;
+  box-shadow: 0 0 12px rgba(0, 255, 102, 0.04), inset 0 0 12px rgba(0, 255, 102, 0.04);
+}
+
+.symbol {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.15));
+}
+
+/* Animations */
+.reel.spinning {
+  animation: reelSpin 0.1s linear infinite;
+  filter: blur(1.5px);
+}
+
+.reel.settling {
+  animation: reelSettle 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes reelSpin {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+  100% { transform: translateY(-6px); }
+}
+
+@keyframes reelSettle {
+  0% { transform: scale(1); filter: blur(1.5px); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); filter: blur(0); }
+}
+
+.reel-divider {
+  font-size: 20px;
+  font-weight: bold;
+  color: #ffffff;
+  padding: 0 2px;
+  margin-top: 15px;
+}
+
+/* BLACKJACK GAME */
+.blackjack-area {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+}
+
+.hand-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 68px;
+  background: #07080b;
+  border-radius: var(--radius-md);
+  padding: 8px;
+  border: 1px solid var(--container-border);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* Sleek Blackjack Cards */
+.card {
+  width: 36px;
+  height: 54px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #ffffff;
+  color: #121212;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 2px;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm), 0 4px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+  text-transform: uppercase;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.card.red {
+  color: var(--card-red);
+}
+
+.card .suit {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.card .rank {
+  line-height: 1;
+}
+
+/* Beautiful custom card back for hidden dealer card */
+.card:not(:has(span)) {
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-blue));
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 900;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+.blackjack-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* SPIN & GAME BUTTONS */
+.spin-btn {
+  background: linear-gradient(135deg, var(--neon-pink), #e6006f);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 13px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(255, 0, 127, 0.3);
+}
+
+.spin-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ff1a8c, #ff007f);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(255, 0, 127, 0.45);
+}
+
+.spin-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(255, 0, 127, 0.3);
+}
+
+.spin-btn:disabled {
+  background: #20222a;
+  color: var(--text-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* RESET BUTTON */
+.reset-btn {
+  background: var(--container-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--container-border);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.reset-btn:hover {
+  background: #20222a;
+  border-color: var(--text-secondary);
+}
+
+/* MESSAGE TICKER / NOTIFICATION PANEL */
+.ticker-box {
+  background-color: #07080b;
+  color: var(--neon-pink);
+  border: 1px solid var(--container-border);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+}
+
+.ticker-box.spinning {
+  color: var(--neon-green);
+  border-color: rgba(0, 255, 102, 0.2);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 12px rgba(0, 255, 102, 0.15);
+}
+
+/* ACTIVE TIMER SECTION */
+.timer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-color: var(--container-border);
+}
+
+.timer-section.disabled {
+  opacity: 0.15;
+  pointer-events: none;
+  filter: grayscale(1);
+}
+
+.timer-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #07080b;
+  border: 1px solid var(--container-border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6);
+}
+
+#timer-phase {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+}
+
+#timer-clock {
+  font-size: 26px;
+  font-weight: 850;
+  color: var(--neon-green);
+  text-shadow: 0 0 10px rgba(0, 255, 102, 0.3);
+  letter-spacing: 0.5px;
+}
+
+/* TO-DO / LOOT LIST SECTION */
+.todo-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#todo-form {
+  display: flex;
+  gap: 8px;
+}
+
+.todo-input {
+  flex: 1;
+  background: #07080b;
+  color: var(--text-primary);
+  border: 1px solid var(--container-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  text-transform: none; /* Keep natural task typing case! */
+}
+
+.todo-input:focus {
+  outline: none;
+  border-color: var(--text-secondary);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.04);
+}
+
+.todo-input::placeholder {
+  color: var(--text-muted);
+}
+
+.todo-add-btn {
+  background: var(--text-primary);
+  color: var(--bg-color);
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 750;
+  padding: 0 16px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+
+.todo-add-btn:hover {
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
+}
+
+.todo-list {
+  list-style: none;
+  max-height: 140px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 2px;
+}
+
+/* Subtle, Modern Scrollbar */
+.todo-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.todo-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.todo-list::-webkit-scrollbar-thumb {
+  background: var(--container-border);
+  border-radius: 4px;
+}
+
+.todo-list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  background: #111218;
+  border: 1px solid var(--container-border);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  word-break: break-all;
+  text-transform: none; /* Keep natural task case! */
+  transition: all 0.2s ease;
+}
+
+.todo-item:hover {
+  border-color: var(--text-secondary);
+  transform: translateX(1px);
+}
+
+.todo-item.completed {
+  text-decoration: line-through;
+  color: var(--text-muted);
+  border-color: transparent;
+  background: rgba(17, 18, 24, 0.4);
+  opacity: 0.65;
+}
+
+.todo-text {
+  flex: 1;
+}
+
+.todo-del {
+  color: var(--neon-pink);
+  cursor: pointer;
+  font-weight: 700;
+  padding-left: 10px;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  transition: color 0.2s ease;
+  text-transform: uppercase;
+}
+
+.todo-del:hover {
+  color: #ff3399;
+}
