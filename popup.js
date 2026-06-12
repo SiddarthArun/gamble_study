@@ -21,6 +21,8 @@ let studyMinutes = 0;
 let breakMinutes = 0;
 let tasks = [];
 let countdownInterval = null;
+let isWorkSessionActive = false;
+let sessionLogs = [];
 
 // Blackjack State
 let deck = [];
@@ -53,6 +55,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const todoForm = document.getElementById("todo-form");
   const todoInput = document.getElementById("todo-input");
   const todoList = document.getElementById("todo-list");
+  
+  // Session elements
+  const startSessionBtn = document.getElementById("start-session-btn");
+  const endSessionBtn = document.getElementById("end-session-btn");
+  const sessionSummaryContainer = document.getElementById("session-summary-container");
+  const sessionSummaryText = document.getElementById("session-summary-text");
+  const copySummaryBtn = document.getElementById("copy-summary-btn");
+  const exportSummaryBtn = document.getElementById("export-summary-btn");
+  const dismissSummaryBtn = document.getElementById("dismiss-summary-btn");
 
   // Rain Sidebar elements
   const rainSidebar = document.getElementById("rain-sidebar");
@@ -95,16 +106,19 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Load Initial State
-  chrome.storage.local.get(["timerState", "endTime", "studyMinutes", "breakMinutes", "tasks", "rainPlaying", "rainVolume"], (data) => {
+  chrome.storage.local.get(["timerState", "endTime", "studyMinutes", "breakMinutes", "tasks", "rainPlaying", "rainVolume", "isWorkSessionActive", "sessionLogs"], (data) => {
     if (data.timerState) timerState = data.timerState;
     if (data.endTime) endTime = data.endTime;
     if (data.studyMinutes) studyMinutes = data.studyMinutes;
     if (data.breakMinutes) breakMinutes = data.breakMinutes;
     if (data.tasks) tasks = data.tasks;
+    if (data.isWorkSessionActive !== undefined) isWorkSessionActive = data.isWorkSessionActive;
+    if (data.sessionLogs) sessionLogs = data.sessionLogs;
     
     updateTimerUI(spinBtn, reel1, reel2, reel3, tickerMsg, timerSection, timerClock);
     renderTasks(todoList);
     updateRainUI(!!data.rainPlaying, data.rainVolume !== undefined ? data.rainVolume : 0.5);
+    updateSessionUI();
   });
 
   // Sync UI on storage change
@@ -116,7 +130,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
       
-      if (changes.timerState) timerState = changes.timerState.newValue;
+      if (changes.isWorkSessionActive) {
+          isWorkSessionActive = changes.isWorkSessionActive.newValue;
+          updateSessionUI();
+      }
+      if (changes.timerState) {
+          timerState = changes.timerState.newValue;
+          logAction("TIME", timerState);
+      }
+
       if (changes.endTime) endTime = changes.endTime.newValue;
       if (changes.studyMinutes) studyMinutes = changes.studyMinutes.newValue;
       if (changes.breakMinutes) breakMinutes = changes.breakMinutes.newValue;
@@ -140,13 +162,103 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   resetBtn.addEventListener("click", () => {
-
     chrome.alarms.clear("studyRouletteAlarm", () => {
       chrome.storage.local.set({ timerState: "IDLE", endTime: 0 }, () => {
         timerState = "IDLE";
         updateTimerUI(spinBtn, reel1, reel2, reel3, tickerMsg, timerSection, timerClock);
+        logAction("TIME", "CASHED_OUT");
       });
     });
+  });
+
+  // --- SESSION LOGIC ---
+  function logAction(type, description) {
+    if (!isWorkSessionActive) return;
+    const log = { timestamp: Date.now(), type, description };
+    sessionLogs.push(log);
+    chrome.storage.local.set({ sessionLogs });
+  }
+
+  function updateSessionUI() {
+    startSessionBtn.style.display = isWorkSessionActive ? "none" : "block";
+    endSessionBtn.style.display = isWorkSessionActive ? "block" : "none";
+  }
+
+  startSessionBtn.addEventListener("click", () => {
+    isWorkSessionActive = true;
+    sessionLogs = [];
+    chrome.storage.local.set({ isWorkSessionActive: true, sessionLogs: [], sessionStartTime: Date.now() });
+    updateSessionUI();
+    logAction("TIME", timerState); // Record initial state
+  });
+
+  endSessionBtn.addEventListener("click", () => {
+    isWorkSessionActive = false;
+    chrome.storage.local.set({ isWorkSessionActive: false });
+    updateSessionUI();
+    logAction("TIME", "SESSION_ENDED");
+    
+    // Allow a small delay for the final log to be recorded before generating the summary
+    setTimeout(() => {
+        chrome.storage.local.get('sessionLogs', (data) => {
+            const logs = data.sessionLogs;
+            let summary = "=== WORK SESSION SUMMARY ===\n\n";
+            
+            const taskActions = logs.filter(l => l.type === 'TASK');
+            const gambleActions = logs.filter(l => l.type === 'GAMBLE');
+            const timeActions = logs.filter(l => l.type === 'TIME');
+
+            summary += "--- TASKS ---\n";
+            if (taskActions.length === 0) summary += "No tasks interacted with.\n";
+            else taskActions.forEach(a => summary += `- ${a.description}\n`);
+            
+            summary += "\n--- TIME DURATIONS ---\n";
+            if (timeActions.length <= 1) summary += "No time data recorded.\n";
+            else {
+                for (let i = 0; i < timeActions.length - 1; i++) {
+                    const startLog = timeActions[i];
+                    const endLog = timeActions[i+1];
+                    const durationMins = Math.round((endLog.timestamp - startLog.timestamp) / 60000);
+                    
+                    if (startLog.description === "STUDYING") {
+                        summary += `- Worked for ${durationMins} mins\n`;
+                    } else if (startLog.description === "BREAKING") {
+                        summary += `- Break for ${durationMins} mins\n`;
+                    } else if (startLog.description === "CASHED_OUT") {
+                         // Session ended at cash out
+                         break;
+                    }
+                }
+            }
+            
+            summary += "\n--- GAMBLING OUTCOMES ---\n";
+            if (gambleActions.length === 0) summary += "No gambles taken.\n";
+            else gambleActions.forEach(a => summary += `- ${a.description}\n`);
+            
+            sessionSummaryText.textContent = summary;
+            sessionSummaryContainer.style.display = "block";
+        });
+    }, 100);
+  });
+
+  copySummaryBtn.addEventListener("click", () => {
+      navigator.clipboard.writeText(sessionSummaryText.textContent);
+      // Removed alert as requested to reduce popup window visibility
+  });
+
+  exportSummaryBtn.addEventListener("click", () => {
+      const blob = new Blob([sessionSummaryText.textContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `session_summary_${Date.now()}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+  });
+
+  dismissSummaryBtn.addEventListener("click", () => {
+      sessionSummaryContainer.style.display = "none";
+      chrome.storage.local.set({ sessionLogs: [] });
   });
 
   todoForm.addEventListener("submit", (e) => {
@@ -155,6 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (text) {
       tasks.push({ id: Date.now(), text, completed: false });
       saveTasks(todoList);
+      logAction("TASK", `Added task: "${text}"`);
       todoInput.value = "";
     }
   });
@@ -253,6 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
       breakMinutes: breakTime,
       endTime: Date.now() + (study * 60 * 1000)
     });
+    logAction("GAMBLE", `Blackjack: ${result}. Hand: ${getHandValue(playerHand)} vs ${getHandValue(dealerHand)}`);
   }
 
   // SLOT LOGIC
@@ -329,6 +443,7 @@ document.addEventListener("DOMContentLoaded", () => {
       breakMinutes: Math.round(breakTime),
       endTime: Date.now() + (Math.round(study) * 60 * 1000)
     });
+    logAction("GAMBLE", `Slots: ${symbols.join("-")}`);
   }
 
   function runLiveTimer(timerClock, timerPhase) {
@@ -373,11 +488,13 @@ document.addEventListener("DOMContentLoaded", () => {
       li.querySelector(".todo-text").addEventListener("click", () => {
         task.completed = !task.completed;
         saveTasks(todoList);
+        logAction("TASK", `Task "${task.text}" marked as ${task.completed ? 'completed' : 'incomplete'}`);
       });
       li.querySelector(".todo-del").addEventListener("click", (e) => {
         e.stopPropagation();
         tasks = tasks.filter(t => t.id !== task.id);
         saveTasks(todoList);
+        logAction("TASK", `Task "${task.text}" deleted`);
       });
       todoList.appendChild(li);
     });

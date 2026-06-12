@@ -7,7 +7,7 @@
 </head>
 <body>
   <div class="app-container">
-    <!-- Header -->
+      <!-- Header -->
     <header class="casino-header">
       <h1 class="glitch-title">STUDY ROULETTE</h1>
       <p class="subtitle">HIGH VOLATILITY POMODORO</p>
@@ -15,6 +15,7 @@
         <button id="mode-switch" class="reset-btn">MODE: SLOTS</button>
       </div>
     </header>
+
 
     <!-- Floating Rain Button -->
     <button id="floating-rain-btn" class="floating-rain-btn">🎶</button>
@@ -87,6 +88,11 @@
         
         <!-- Spin Button -->
         <button id="spin-btn" class="spin-btn">SPIN TO WIN</button>
+        <!-- Session Control -->
+        <div id="session-controls" style="margin-top: 10px;">
+          <button id="start-session-btn" class="reset-btn" style="width: 100%; padding: 4px; font-size: 10px;">START WORK SESSION</button>
+          <button id="end-session-btn" class="reset-btn" style="width: 100%; padding: 4px; font-size: 10px; display: none; color: var(--neon-pink);">END SESSION</button>
+        </div>
       </div>
     </div>
 
@@ -103,9 +109,20 @@
       </div>
     </div>
 
+    <!-- Session Summary (Minimized/Popup style) -->
+    <div id="session-summary-container" class="border-box" style="display: none; position: absolute; top: 120px; left: 16px; width: 348px; z-index: 1001; background: var(--bg-color);">
+        <div class="section-label">SESSION SUMMARY</div>
+        <pre id="session-summary-text" style="font-size: 10px; white-space: pre-wrap; color: var(--text-primary); margin-bottom: 12px; max-height: 250px; overflow-y: auto;"></pre>
+        <div style="display: flex; gap: 4px;">
+            <button id="copy-summary-btn" class="reset-btn" style="flex: 1; padding: 4px;">COPY</button>
+            <button id="export-summary-btn" class="reset-btn" style="flex: 1; padding: 4px;">EXPORT</button>
+            <button id="dismiss-summary-btn" class="reset-btn" style="flex: 1; padding: 4px;">X</button>
+        </div>
+    </div>
+
     <!-- Active Countdown Section -->
     <div id="timer-section" class="timer-section border-box disabled">
-      <div class="section-label">ACTIVE SESSION</div>
+      <div class="section-label">ACTIVE POMODORO</div>
       <div class="timer-display">
         <span id="timer-phase">IDLE</span>
         <span id="timer-clock">00:00</span>
