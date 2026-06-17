@@ -484,11 +484,30 @@ document.addEventListener("DOMContentLoaded", () => {
     tasks.forEach((task) => {
       const li = document.createElement("li");
       li.className = `todo-item ${task.completed ? "completed" : ""}`;
-      li.innerHTML = `<span class="todo-text">${task.text}</span><span class="todo-del">[X]</span>`;
+      li.innerHTML = `<span class="todo-text">${task.text}</span><span class="todo-edit">[EDIT]</span><span class="todo-del">[X]</span>`;
       li.querySelector(".todo-text").addEventListener("click", () => {
         task.completed = !task.completed;
         saveTasks(todoList);
         logAction("TASK", `Task "${task.text}" marked as ${task.completed ? 'completed' : 'incomplete'}`);
+      });
+      li.querySelector(".todo-edit").addEventListener("click", (e) => {
+        e.stopPropagation();
+        const textSpan = li.querySelector(".todo-text");
+        const editSpan = li.querySelector(".todo-edit");
+        const input = document.createElement("input");
+        input.value = task.text;
+        input.className = "todo-input";
+        input.style.padding = "2px 4px";
+        textSpan.replaceWith(input);
+        editSpan.textContent = "[SAVE]";
+        const saveAction = () => {
+            task.text = input.value.trim();
+            saveTasks(todoList);
+            logAction("TASK", `Task edited: "${task.text}"`);
+        };
+        input.addEventListener("blur", saveAction);
+        input.addEventListener("keypress", (e) => { if (e.key === 'Enter') saveAction(); });
+        input.focus();
       });
       li.querySelector(".todo-del").addEventListener("click", (e) => {
         e.stopPropagation();
