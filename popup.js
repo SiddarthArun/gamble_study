@@ -20,6 +20,8 @@ let endTime = 0;
 let studyMinutes = 0;
 let breakMinutes = 0;
 let tasks = [];
+let blockedList = [];
+let blockMode = false;
 let countdownInterval = null;
 let isWorkSessionActive = false;
 let sessionLogs = [];
@@ -56,6 +58,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const todoInput = document.getElementById("todo-input");
   const todoList = document.getElementById("todo-list");
   
+  const blockToggle = document.getElementById("block-toggle");
+  const blockForm = document.getElementById("block-form");
+  const blockInput = document.getElementById("block-input");
+  const blockList = document.getElementById("block-list");
+  
   // Session elements
   const startSessionBtn = document.getElementById("start-session-btn");
   const endSessionBtn = document.getElementById("end-session-btn");
@@ -67,7 +74,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Rain Sidebar elements
   const rainSidebar = document.getElementById("rain-sidebar");
-  const rainSidebarOverlay = document.getElementById("rain-sidebar-overlay");
   const rainFloatingBtn = document.getElementById("floating-rain-btn");
   const rainCloseBtn = document.getElementById("sidebar-close-btn");
   const rainToggle = document.getElementById("rain-toggle");
@@ -78,12 +84,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // Sidebar logic
   function toggleRainSidebar(open) {
     rainSidebar.classList.toggle("open", open);
-    rainSidebarOverlay.classList.toggle("open", open);
+    sidebarOverlay.classList.toggle("open", open);
   }
 
   rainFloatingBtn.addEventListener("click", () => toggleRainSidebar(true));
   rainCloseBtn.addEventListener("click", () => toggleRainSidebar(false));
-  rainSidebarOverlay.addEventListener("click", () => toggleRainSidebar(false));
 
   function updateRainUI(playing, volume) {
     rainToggle.checked = playing;
@@ -105,18 +110,57 @@ document.addEventListener("DOMContentLoaded", () => {
     volumePct.textContent = `${Math.round(volume * 100)}%`;
   });
 
+  // Sidebar Trigger elements
+  const openTasksBtn = document.getElementById("open-tasks-btn");
+  const openBlocksBtn = document.getElementById("open-blocks-btn");
+  const tasksSidebar = document.getElementById("tasks-sidebar");
+  const blockSidebar = document.getElementById("block-sidebar");
+  const tasksCloseBtn = document.getElementById("tasks-close-btn");
+  const blockCloseBtn = document.getElementById("block-close-btn");
+  const sidebarOverlay = document.getElementById("sidebar-overlay");
+  const taskCount = document.getElementById("task-count");
+  const blockStatus = document.getElementById("block-status");
+
+  // Sidebar toggling logic
+  function toggleSidebar(sidebar, open) {
+    sidebar.classList.toggle("open", open);
+    sidebarOverlay.classList.toggle("open", open);
+  }
+
+  openTasksBtn.addEventListener("click", () => toggleSidebar(tasksSidebar, true));
+  tasksCloseBtn.addEventListener("click", () => toggleSidebar(tasksSidebar, false));
+  openBlocksBtn.addEventListener("click", () => toggleSidebar(blockSidebar, true));
+  blockCloseBtn.addEventListener("click", () => toggleSidebar(blockSidebar, false));
+  sidebarOverlay.addEventListener("click", () => {
+    toggleSidebar(rainSidebar, false);
+    toggleSidebar(tasksSidebar, false);
+    toggleSidebar(blockSidebar, false);
+  });
+
+  function updateStatusUI() {
+    taskCount.textContent = tasks.length;
+    blockStatus.textContent = blockMode ? "ON" : "OFF";
+    blockStatus.style.color = blockMode ? "var(--accent-green)" : "var(--text-secondary)";
+  }
+
   // Load Initial State
-  chrome.storage.local.get(["timerState", "endTime", "studyMinutes", "breakMinutes", "tasks", "rainPlaying", "rainVolume", "isWorkSessionActive", "sessionLogs"], (data) => {
+  chrome.storage.local.get(["timerState", "endTime", "studyMinutes", "breakMinutes", "tasks", "rainPlaying", "rainVolume", "isWorkSessionActive", "sessionLogs", "blockMode", "blockedList"], (data) => {
     if (data.timerState) timerState = data.timerState;
     if (data.endTime) endTime = data.endTime;
     if (data.studyMinutes) studyMinutes = data.studyMinutes;
     if (data.breakMinutes) breakMinutes = data.breakMinutes;
     if (data.tasks) tasks = data.tasks;
+    if (data.blockedList) blockedList = data.blockedList;
+    if (data.blockMode !== undefined) blockMode = data.blockMode;
     if (data.isWorkSessionActive !== undefined) isWorkSessionActive = data.isWorkSessionActive;
     if (data.sessionLogs) sessionLogs = data.sessionLogs;
     
     updateTimerUI(spinBtn, reel1, reel2, reel3, tickerMsg, timerSection, timerClock);
     renderTasks(todoList);
+    renderBlocks(blockList);
+    blockToggle.checked = blockMode;
+    updateStatusUI();
+    updateBlockRules();
     updateRainUI(!!data.rainPlaying, data.rainVolume !== undefined ? data.rainVolume : 0.5);
     updateSessionUI();
   });
@@ -471,6 +515,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (changes.studyMinutes) studyMinutes = changes.studyMinutes.newValue;
       if (changes.breakMinutes) breakMinutes = changes.breakMinutes.newValue;
       if (changes.tasks) { tasks = changes.tasks.newValue; renderTasks(todoList); }
+      if (changes.blockedList) { blockedList = changes.blockedList.newValue; renderBlocks(blockList); }
       updateTimerUI(spinBtn, reel1, reel2, reel3, tickerMsg, timerSection, timerClock);
     }
   });
@@ -484,22 +529,26 @@ document.addEventListener("DOMContentLoaded", () => {
     tasks.forEach((task) => {
       const li = document.createElement("li");
       li.className = `todo-item ${task.completed ? "completed" : ""}`;
-      li.innerHTML = `<span class="todo-text">${task.text}</span><span class="todo-edit">[EDIT]</span><span class="todo-del">[X]</span>`;
+      li.innerHTML = `
+        <span class="todo-text">${task.text}</span>
+        <button class="small-action-btn edit-btn">EDIT</button>
+        <button class="small-action-btn del-btn">DEL</button>
+      `;
       li.querySelector(".todo-text").addEventListener("click", () => {
         task.completed = !task.completed;
         saveTasks(todoList);
         logAction("TASK", `Task "${task.text}" marked as ${task.completed ? 'completed' : 'incomplete'}`);
       });
-      li.querySelector(".todo-edit").addEventListener("click", (e) => {
+      li.querySelector(".edit-btn").addEventListener("click", (e) => {
         e.stopPropagation();
         const textSpan = li.querySelector(".todo-text");
-        const editSpan = li.querySelector(".todo-edit");
+        const editBtn = li.querySelector(".edit-btn");
         const input = document.createElement("input");
         input.value = task.text;
         input.className = "todo-input";
         input.style.padding = "2px 4px";
         textSpan.replaceWith(input);
-        editSpan.textContent = "[SAVE]";
+        editBtn.textContent = "SAVE";
         const saveAction = () => {
             task.text = input.value.trim();
             saveTasks(todoList);
@@ -509,7 +558,7 @@ document.addEventListener("DOMContentLoaded", () => {
         input.addEventListener("keypress", (e) => { if (e.key === 'Enter') saveAction(); });
         input.focus();
       });
-      li.querySelector(".todo-del").addEventListener("click", (e) => {
+      li.querySelector(".del-btn").addEventListener("click", (e) => {
         e.stopPropagation();
         tasks = tasks.filter(t => t.id !== task.id);
         saveTasks(todoList);
@@ -517,5 +566,109 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       todoList.appendChild(li);
     });
+    updateStatusUI();
+  }
+
+
+  blockToggle.addEventListener("change", (e) => {
+    blockMode = e.target.checked;
+    chrome.storage.local.set({ blockMode }, () => {
+        updateBlockRules();
+        updateStatusUI();
+    });
+  });
+
+  blockForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const text = blockInput.value.trim().toLowerCase();
+    if (text) {
+      blockedList.push({ id: Date.now(), text });
+      saveBlocks(blockList);
+      blockInput.value = "";
+    }
+  });
+
+  function saveBlocks(blockList) {
+    chrome.storage.local.set({ blockedList }, () => {
+      renderBlocks(blockList);
+      updateBlockRules();
+    });
+  }
+
+  function updateBlockRules() {
+    chrome.storage.local.get(["blockMode", "blockedList"], (data) => {
+      console.log("Updating block rules. Mode:", data.blockMode, "List:", data.blockedList);
+      const rules = [];
+      if (data.blockMode && data.blockedList) {
+        data.blockedList.forEach((item, index) => {
+          rules.push({
+            id: index + 1,
+            priority: 1,
+            action: { 
+              type: "redirect", 
+              redirect: { url: chrome.runtime.getURL("blocked.html") } 
+            },
+            condition: {
+              urlFilter: `*${item.text}*`,
+              resourceTypes: ["main_frame"]
+            }
+          });
+        });
+      }
+      console.log("New rules to add:", rules);
+      
+      chrome.declarativeNetRequest.getDynamicRules((oldRules) => {
+        const oldRuleIds = oldRules.map(r => r.id);
+        console.log("Removing old rule IDs:", oldRuleIds);
+        chrome.declarativeNetRequest.updateDynamicRules({
+          removeRuleIds: oldRuleIds,
+          addRules: rules
+        }, () => {
+          if (chrome.runtime.lastError) {
+            console.error("Error updating rules:", chrome.runtime.lastError);
+          } else {
+            console.log("Rules updated successfully.");
+          }
+        });
+      });
+    });
+  }
+
+  function renderBlocks(blockList) {
+    blockList.innerHTML = "";
+    blockedList.forEach((item) => {
+      const li = document.createElement("li");
+      li.className = "todo-item";
+      li.innerHTML = `
+        <span class="todo-text">${item.text}</span>
+        <button class="small-action-btn edit-btn">EDIT</button>
+        <button class="small-action-btn del-btn">DEL</button>
+      `;
+      li.querySelector(".edit-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        const textSpan = li.querySelector(".todo-text");
+        const editBtn = li.querySelector(".edit-btn");
+        const input = document.createElement("input");
+        input.value = item.text;
+        input.className = "todo-input";
+        input.style.padding = "2px 4px";
+        textSpan.replaceWith(input);
+        editBtn.textContent = "SAVE";
+        const saveAction = () => {
+          item.text = input.value.trim();
+          saveBlocks(blockList);
+        };
+        input.addEventListener("blur", saveAction);
+        input.addEventListener("keypress", (e) => { if (e.key === 'Enter') saveAction(); });
+        input.focus();
+      });
+      li.querySelector(".del-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        blockedList = blockedList.filter(t => t.id !== item.id);
+        saveBlocks(blockList);
+      });
+      blockList.appendChild(li);
+    });
+    updateStatusUI();
   }
 });

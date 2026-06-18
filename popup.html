@@ -11,9 +11,14 @@
     <header class="casino-header">
       <h1 class="glitch-title">STUDY ROULETTE</h1>
       <p class="subtitle">HIGH VOLATILITY POMODORO</p>
-      <div class="mode-toggle">
+      
+      <!-- Main Action Bar -->
+      <div style="display: flex; gap: 8px; margin-top: 12px; justify-content: center;">
         <button id="mode-switch" class="reset-btn">MODE: SLOTS</button>
+        <button id="open-tasks-btn" class="reset-btn">TASKS (<span id="task-count">0</span>)</button>
+        <button id="open-blocks-btn" class="reset-btn">BLOCKER: <span id="block-status">OFF</span></button>
       </div>
+
       <!-- Session Control -->
       <div id="session-controls" style="margin-top: 12px;">
         <button id="start-session-btn" class="spin-btn" style="width: 100%;">START WORK SESSION</button>
@@ -21,11 +26,10 @@
       </div>
     </header>
 
-
     <!-- Floating Rain Button -->
     <button id="floating-rain-btn" class="floating-rain-btn">🎶</button>
 
-    <!-- Ambient Rain Sidebar -->
+    <!-- Sidebars -->
     <div id="rain-sidebar" class="sidebar">
       <div class="sidebar-header">
         <span class="sidebar-title">AMBIENT CONTROL</span>
@@ -38,7 +42,7 @@
             <span class="switch-status" id="rain-status-text">OFF</span>
             <label class="switch">
               <input type="checkbox" id="rain-toggle">
-              <span class="slider round"></span>
+              <span class="slider"></span>
             </label>
           </div>
         </div>
@@ -52,8 +56,43 @@
       </div>
     </div>
     
+    <div id="tasks-sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">LOOT LIST (TASKS)</span>
+        <button id="tasks-close-btn" class="sidebar-close-btn">&times;</button>
+      </div>
+      <div class="sidebar-content">
+        <form id="todo-form">
+          <input type="text" id="todo-input" class="todo-input" placeholder="ADD TASK..." required maxlength="40">
+          <button type="submit" class="todo-add-btn">ADD</button>
+        </form>
+        <ul id="todo-list" class="todo-list"></ul>
+      </div>
+    </div>
+    
+    <div id="block-sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">DISTRACTION BLOCKER</span>
+        <button id="block-close-btn" class="sidebar-close-btn">&times;</button>
+      </div>
+      <div class="sidebar-content">
+        <div class="switch-container">
+          <label class="ambient-label">BLOCK MODE</label>
+          <label class="switch">
+            <input type="checkbox" id="block-toggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <form id="block-form">
+          <input type="text" id="block-input" class="todo-input" placeholder="ADD URL KEYWORD..." required>
+          <button type="submit" class="todo-add-btn">ADD</button>
+        </form>
+        <ul id="block-list" class="todo-list"></ul>
+      </div>
+    </div>
+
     <!-- Sidebar Overlay -->
-    <div id="rain-sidebar-overlay" class="sidebar-overlay"></div>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
     <!-- Slots Container -->
     <div id="slots-container" class="game-container">
@@ -107,7 +146,7 @@
       </div>
     </div>
 
-    <!-- Session Summary (Minimized/Popup style) -->
+    <!-- Session Summary -->
     <div id="session-summary-container" class="border-box" style="display: none; position: absolute; top: 120px; left: 16px; width: 348px; z-index: 1001; background: var(--bg-color);">
         <div class="section-label">SESSION SUMMARY</div>
         <pre id="session-summary-text" style="font-size: 10px; white-space: pre-wrap; color: var(--text-primary); margin-bottom: 12px; max-height: 250px; overflow-y: auto;"></pre>
@@ -126,18 +165,6 @@
         <span id="timer-clock">00:00</span>
       </div>
       <button id="reset-btn" class="reset-btn">CASH OUT (RESET)</button>
-    </div>
-
-    <!-- To-Do Section -->
-    <div class="todo-section border-box">
-      <div class="section-label">LOOT LIST (TASKS)</div>
-      <form id="todo-form">
-        <input type="text" id="todo-input" class="todo-input" placeholder="ADD TASK..." required maxlength="40">
-        <button type="submit" class="todo-add-btn">ADD</button>
-      </form>
-      <ul id="todo-list" class="todo-list">
-        <!-- Tasks injected here -->
-      </ul>
     </div>
   </div>
   <script src="popup.js"></script>

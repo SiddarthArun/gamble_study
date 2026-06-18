@@ -327,14 +327,14 @@ body {
   color: var(--text-primary);
 }
 
-/* TO-DO / LOOT LIST SECTION */
+/* TO-DO / LOOT LIST / BLOCK LIST SECTION */
 .todo-section {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-#todo-form {
+#todo-form, #block-form {
   display: flex;
   gap: 8px;
 }
@@ -384,24 +384,26 @@ body {
   color: var(--text-muted);
 }
 
-.todo-del {
-  color: var(--accent-red);
-  padding-left: 10px;
-  font-size: 10px;
-}
-
-.todo-edit {
+/* Small Action Buttons */
+.small-action-btn {
+  background: var(--container-bg);
   color: var(--text-secondary);
+  border: 1px solid var(--container-border);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  font-size: 9px;
   cursor: pointer;
-  font-weight: 500;
-  padding-left: 10px;
-  font-size: 10px;
-  transition: color 0.2s ease;
+  margin-left: 4px;
+  transition: all 0.2s ease;
 }
 
-.todo-edit:hover {
+.small-action-btn:hover {
+  border-color: var(--text-primary);
   color: var(--text-primary);
 }
+
+.del-btn { color: #f85149; }
+.edit-btn { color: var(--accent-blue); }
 
 /* FLOATING RAIN BUTTON */
 .floating-rain-btn {
@@ -481,13 +483,49 @@ body {
   padding: 8px 12px;
 }
 
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
 .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-color: var(--container-border);
-  border-radius: 20px;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
 }
 
 input:checked + .slider {
   background-color: var(--accent-green);
+}
+
+input:checked + .slider:before {
+  transform: translateX(18px);
 }
 
 .volume-range {

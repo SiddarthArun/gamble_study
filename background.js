@@ -57,17 +57,16 @@ chrome.storage.onChanged.addListener((changes, area) => {
       chrome.runtime.sendMessage({
         type: 'UPDATE_PLAYING',
         playing: changes.rainPlaying.newValue
-      }).catch(() => {}); // Catch error if offscreen isn't ready yet
+      }).catch(() => {});
     }
     if (changes.rainVolume) {
       chrome.runtime.sendMessage({
         type: 'UPDATE_VOLUME',
         volume: changes.rainVolume.newValue
-      }).catch(() => {}); // Catch error if offscreen isn't ready yet
+      }).catch(() => {});
     }
   }
 });
-
 
 // Helper function to display casino notifications
 function showNotification(title, message) {
@@ -89,7 +88,6 @@ chrome.alarms.onAlarm.addListener((alarm) => {
       const breakMins = data.breakMinutes || 1;
 
       if (currentState === "STUDYING") {
-        // Transition from STUDYING to BREAKING phase
         const breakDurationMs = breakMins * 60 * 1000;
         const endTime = Date.now() + breakDurationMs;
 
@@ -97,16 +95,13 @@ chrome.alarms.onAlarm.addListener((alarm) => {
           timerState: "BREAKING",
           endTime: endTime
         }, () => {
-          // Schedule the break alarm
           chrome.alarms.create("studyRouletteAlarm", { when: endTime });
-          
           showNotification(
             "STUDY SESSION OVER! 💸",
             "TIME IS UP! CASH OUT OR DOUBLE DOWN! STARTING BREAK NOW!"
           );
         });
       } else if (currentState === "BREAKING") {
-        // Transition from BREAKING to IDLE phase (cycle completes)
         chrome.storage.local.set({
           timerState: "IDLE",
           endTime: 0
