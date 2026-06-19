@@ -18,10 +18,50 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 // Manage offscreen document
-async function manageOffscreenDocument(playing) {
+async function manageOffscreenDocument(playing, alarmEnabled) {
   const existingContexts = await chrome.runtime.getContexts({
     contextTypes: ['OFFSCREEN_DOCUMENT']
   });
+
+  const shouldBeOpen = playing || alarmEnabled;
+
+  if (existingContexts.length > 0) {
+    if (!shouldBeOpen) {
+      await chrome.offscreen.closeDocument();
+    }
+  } else if (shouldBeOpen) {
+    await chrome.offscreen.createDocument({
+      url: 'offscreen.html',
+      reasons: ['AUDIO_PLAYBACK'],
+      justification: 'play audio alerts or rain ambient sound'
+    });
+  }
+}
+
+// Manage offscreen lifecycle and updates on storage change
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local') {
+    if (changes.rainPlaying || changes.enableAudioAlert) {
+        chrome.storage.local.get(['rainPlaying', 'enableAudioAlert'], (data) => {
+            manageOffscreenDocument(!!data.rainPlaying, !!data.enableAudioAlert);
+        });
+    }
+    
+    if (changes.rainPlaying) {
+      chrome.runtime.sendMessage({
+        type: 'UPDATE_PLAYING',
+        playing: changes.rainPlaying.newValue
+      }).catch(() => {});
+    }
+    if (changes.rainVolume) {
+      chrome.runtime.sendMessage({
+        type: 'UPDATE_VOLUME',
+        volume: changes.rainVolume.newValue
+      }).catch(() => {});
+    }
+  }
+});
+
 
   if (existingContexts.length > 0) {
     if (!playing) {
@@ -83,9 +123,74 @@ function showNotification(title, message) {
 // Handle Alarm Expiration
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "studyRouletteAlarm") {
-    chrome.storage.local.get(["timerState", "studyMinutes", "breakMinutes"], (data) => {
+    chrome.storage.local.get(["timerState", "studyMinutes", "breakMinutes", "enableAudioAlert", "enablePopupAlert"], (data) => {
       const currentState = data.timerState || "IDLE";
       const breakMins = data.breakMinutes || 1;
+
+      // Trigger audio alarm
+      if (data.enableAudioAlert) {
+        chrome.runtime.sendMessage({ type: 'PLAY_ALARM' }).catch(() => {});
+      }
+
+      // Trigger visual popup
+      if (data.enablePopupAlert) {
+        chrome.tabs.query({ url: "*://*/*" }, (tabs) => {
+          // Find the active tab in the current window first
+          let targetTab = tabs.find(t => t.active && t.windowId === chrome.windows.WINDOW_ID_CURRENT);
+          
+          // Fallback to any tab if no active one found
+          if (!targetTab && tabs.length > 0) {
+            targetTab = tabs[0];
+          }
+
+          if (targetTab && targetTab.id) {
+            chrome.scripting.executeScript({
+              target: { tabId: targetTab.id },
+              func: () => {
+                if (document.getElementById('study-roulette-modal')) return;
+                
+                const modal = document.createElement('div');
+                modal.id = 'study-roulette-modal';
+                modal.style.position = 'fixed';
+                modal.style.top = '0';
+                modal.style.left = '0';
+                modal.style.width = '100%';
+                modal.style.height = '100%';
+                modal.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                modal.style.zIndex = '999999';
+                modal.style.display = 'flex';
+                modal.style.alignItems = 'center';
+                modal.style.justifyContent = 'center';
+                modal.style.flexDirection = 'column';
+                modal.style.color = 'white';
+                modal.style.fontFamily = 'sans-serif';
+                
+                const title = document.createElement('h1');
+                title.textContent = 'SESSION ENDED';
+                title.style.marginBottom = '20px';
+                
+                const dismissBtn = document.createElement('button');
+                dismissBtn.textContent = 'DISMISS';
+                dismissBtn.style.padding = '15px 30px';
+                dismissBtn.style.fontSize = '20px';
+                dismissBtn.style.cursor = 'pointer';
+                dismissBtn.style.backgroundColor = '#238636';
+                dismissBtn.style.color = 'white';
+                dismissBtn.style.border = 'none';
+                dismissBtn.style.borderRadius = '5px';
+                
+                dismissBtn.addEventListener('click', () => {
+                    document.body.removeChild(modal);
+                });
+                
+                modal.appendChild(title);
+                modal.appendChild(dismissBtn);
+                document.body.appendChild(modal);
+              }
+            }).catch(err => console.error("Failed to inject modal:", err));
+          }
+        });
+      }
 
       if (currentState === "STUDYING") {
         const breakDurationMs = breakMins * 60 * 1000;

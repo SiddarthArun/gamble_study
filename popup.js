@@ -143,8 +143,15 @@ document.addEventListener("DOMContentLoaded", () => {
     blockStatus.style.color = blockMode ? "var(--accent-green)" : "var(--text-secondary)";
   }
 
+  // Settings elements
+  const settingsSidebar = document.getElementById("settings-sidebar");
+  const openSettingsBtn = document.getElementById("open-settings-btn");
+  const settingsCloseBtn = document.getElementById("settings-close-btn");
+  const audioAlertToggle = document.getElementById("audio-alert-toggle");
+  const popupAlertToggle = document.getElementById("popup-alert-toggle");
+
   // Load Initial State
-  chrome.storage.local.get(["timerState", "endTime", "studyMinutes", "breakMinutes", "tasks", "rainPlaying", "rainVolume", "isWorkSessionActive", "sessionLogs", "blockMode", "blockedList"], (data) => {
+  chrome.storage.local.get(["timerState", "endTime", "studyMinutes", "breakMinutes", "tasks", "rainPlaying", "rainVolume", "isWorkSessionActive", "sessionLogs", "blockMode", "blockedList", "enableAudioAlert", "enablePopupAlert"], (data) => {
     if (data.timerState) timerState = data.timerState;
     if (data.endTime) endTime = data.endTime;
     if (data.studyMinutes) studyMinutes = data.studyMinutes;
@@ -155,6 +162,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (data.isWorkSessionActive !== undefined) isWorkSessionActive = data.isWorkSessionActive;
     if (data.sessionLogs) sessionLogs = data.sessionLogs;
     
+    // Set settings
+    audioAlertToggle.checked = !!data.enableAudioAlert;
+    popupAlertToggle.checked = !!data.enablePopupAlert;
+    
     updateTimerUI(spinBtn, reel1, reel2, reel3, tickerMsg, timerSection, timerClock);
     renderTasks(todoList);
     renderBlocks(blockList);
@@ -164,6 +175,31 @@ document.addEventListener("DOMContentLoaded", () => {
     updateRainUI(!!data.rainPlaying, data.rainVolume !== undefined ? data.rainVolume : 0.5);
     updateSessionUI();
   });
+
+  // Settings Logic
+  audioAlertToggle.addEventListener("change", (e) => {
+    chrome.storage.local.set({ enableAudioAlert: e.target.checked });
+  });
+
+  popupAlertToggle.addEventListener("change", (e) => {
+    chrome.storage.local.set({ enablePopupAlert: e.target.checked });
+  });
+
+  // Sidebar Toggling
+  openTasksBtn.addEventListener("click", () => toggleSidebar(tasksSidebar, true));
+  tasksCloseBtn.addEventListener("click", () => toggleSidebar(tasksSidebar, false));
+  openBlocksBtn.addEventListener("click", () => toggleSidebar(blockSidebar, true));
+  blockCloseBtn.addEventListener("click", () => toggleSidebar(blockSidebar, false));
+  openSettingsBtn.addEventListener("click", () => toggleSidebar(settingsSidebar, true));
+  settingsCloseBtn.addEventListener("click", () => toggleSidebar(settingsSidebar, false));
+  
+  sidebarOverlay.addEventListener("click", () => {
+    toggleSidebar(rainSidebar, false);
+    toggleSidebar(tasksSidebar, false);
+    toggleSidebar(blockSidebar, false);
+    toggleSidebar(settingsSidebar, false);
+  });
+
 
   // Sync UI on storage change
   chrome.storage.onChanged.addListener((changes, area) => {
