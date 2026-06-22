@@ -8,6 +8,7 @@ console.log('Offscreen audio initialized');
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('Offscreen received message:', message);
   if (message.type === 'PLAY_ALARM') {
+    console.log('Playing alarm...');
     alarm.play().catch(err => console.error('Alarm play error:', err));
   }
   if (message.type === 'INIT' || message.type === 'UPDATE_PLAYING') {

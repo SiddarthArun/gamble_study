@@ -63,18 +63,6 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 
-  if (existingContexts.length > 0) {
-    if (!playing) {
-      await chrome.offscreen.closeDocument();
-    }
-  } else if (playing) {
-    await chrome.offscreen.createDocument({
-      url: 'offscreen.html',
-      reasons: ['AUDIO_PLAYBACK'],
-      justification: 'play rain ambient sound'
-    });
-  }
-}
 
 // Handle messages from offscreen document
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -129,21 +117,17 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
       // Trigger audio alarm
       if (data.enableAudioAlert) {
-        chrome.runtime.sendMessage({ type: 'PLAY_ALARM' }).catch(() => {});
+        console.log("Attempting to play alarm...");
+        chrome.runtime.sendMessage({ type: 'PLAY_ALARM' }).catch((err) => console.error("Alarm send error:", err));
       }
 
       // Trigger visual popup
       if (data.enablePopupAlert) {
-        chrome.tabs.query({ url: "*://*/*" }, (tabs) => {
-          // Find the active tab in the current window first
-          let targetTab = tabs.find(t => t.active && t.windowId === chrome.windows.WINDOW_ID_CURRENT);
+        chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
+          const targetTab = tabs[0];
           
-          // Fallback to any tab if no active one found
-          if (!targetTab && tabs.length > 0) {
-            targetTab = tabs[0];
-          }
-
           if (targetTab && targetTab.id) {
+            console.log("Injecting modal into tab:", targetTab.id);
             chrome.scripting.executeScript({
               target: { tabId: targetTab.id },
               func: () => {
@@ -186,6 +170,13 @@ chrome.alarms.onAlarm.addListener((alarm) => {
                 modal.appendChild(title);
                 modal.appendChild(dismissBtn);
                 document.body.appendChild(modal);
+
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => {
+                    if (document.body.contains(modal)) {
+                        document.body.removeChild(modal);
+                    }
+                }, 5000);
               }
             }).catch(err => console.error("Failed to inject modal:", err));
           }
@@ -209,7 +200,8 @@ chrome.alarms.onAlarm.addListener((alarm) => {
       } else if (currentState === "BREAKING") {
         chrome.storage.local.set({
           timerState: "IDLE",
-          endTime: 0
+          endTime: 0,
+          isWorkSessionActive: false
         }, () => {
           showNotification(
             "BREAK OVER! 🎰",

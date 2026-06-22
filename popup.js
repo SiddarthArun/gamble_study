@@ -242,6 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   resetBtn.addEventListener("click", () => {
+    console.log("Reset button clicked");
     chrome.alarms.clear("studyRouletteAlarm", () => {
       chrome.storage.local.set({ timerState: "IDLE", endTime: 0 }, () => {
         timerState = "IDLE";
@@ -265,6 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   startSessionBtn.addEventListener("click", () => {
+    console.log("Start session button clicked");
     isWorkSessionActive = true;
     sessionLogs = [];
     chrome.storage.local.set({ isWorkSessionActive: true, sessionLogs: [], sessionStartTime: Date.now() });
@@ -451,6 +453,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // SLOT LOGIC
   function updateTimerUI(spinBtn, r1, r2, r3, tickerMsg, timerSection, timerClock) {
+    console.log("Updating Timer UI, state:", timerState);
     if (timerState === "IDLE") {
       spinBtn.disabled = false;
       [r1, r2, r3].forEach(r => {

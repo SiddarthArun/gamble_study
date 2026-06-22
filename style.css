@@ -306,6 +306,11 @@ body {
   opacity: 0.5;
 }
 
+.timer-section.disabled .reset-btn {
+  opacity: 1;
+  cursor: pointer;
+}
+
 .timer-display {
   display: flex;
   justify-content: space-between;
@@ -537,5 +542,18 @@ input:checked + .slider:before {
 }
 
 .sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(0, 0, 0, 0.4);
+  display: none;
+  pointer-events: none;
+  z-index: 999;
+}
+
+.sidebar-overlay.open {
+  display: block;
+  pointer-events: auto;
 }
