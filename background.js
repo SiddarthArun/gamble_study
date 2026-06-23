@@ -118,7 +118,10 @@ chrome.alarms.onAlarm.addListener((alarm) => {
       // Trigger audio alarm
       if (data.enableAudioAlert) {
         console.log("Attempting to play alarm...");
-        chrome.runtime.sendMessage({ type: 'PLAY_ALARM' }).catch((err) => console.error("Alarm send error:", err));
+        manageOffscreenDocument(false, true); // Ensure offscreen document is open
+        setTimeout(() => {
+            chrome.runtime.sendMessage({ type: 'PLAY_ALARM' }).catch((err) => console.error("Alarm send error:", err));
+        }, 500); // Small delay to allow offscreen to load
       }
 
       // Trigger visual popup

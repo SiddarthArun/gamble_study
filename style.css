@@ -7,7 +7,7 @@
   --text-secondary: #8b949e;        /* GitHub Dark Secondary Text */
   --text-muted: #484f58;            /* GitHub Dark Muted Text */
   
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-family: 'Mozilla Headline', sans-serif;
   
   --radius-lg: 6px;                 /* GitHub standard rounded corners */
   --radius-md: 6px;
@@ -62,6 +62,7 @@ body {
   color: var(--text-primary);
   text-transform: none;
   letter-spacing: normal;
+  font-family: 'Boldonse', sans-serif;
 }
 
 .subtitle {
@@ -346,12 +347,14 @@ body {
 
 .todo-input {
   flex: 1;
+  min-width: 0; /* Prevents overflow in flex containers */
   background: var(--bg-color);
   color: var(--text-primary);
   border: 1px solid var(--container-border);
   border-radius: var(--radius-md);
   padding: 8px 12px;
   font-size: 12px;
+  width: 100%;
 }
 
 .todo-add-btn {
