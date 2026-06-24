@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "StudyRoulette",
+  "name": "StudyBet",
   "version": "1.0.0",
   "description": "Gamified high-volatility Pomodoro timer and task manager",
   "permissions": [

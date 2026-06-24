@@ -12,7 +12,7 @@
   <div class="app-container">
       <!-- Header -->
     <header class="casino-header">
-      <h1 class="glitch-title">STUDY ROULETTE</h1>
+      <h1 class="glitch-title">STUDYBET</h1>
       
       
       <!-- Main Action Bar -->
@@ -170,6 +170,31 @@
           <button id="stay-btn" class="reset-btn">STAY</button>
         </div>
         <div id="blackjack-msg" class="ticker-box">DEALER READY</div>
+      </div>
+    </div>
+
+    <!-- Roulette Container -->
+    <div id="roulette-container" class="game-container" style="display:none;">
+      <div class="border-box">
+        <div class="roulette-wrapper">
+          <div class="pointer"></div>
+          <div id="roulette-wheel" class="roulette-wheel">?</div>
+        </div>
+        
+        <div class="bet-grid">
+          <button class="bet-btn" data-bet="red">RED</button>
+          <button class="bet-btn" data-bet="black">BLACK</button>
+          <button class="bet-btn" data-bet="odd">ODD</button>
+          <button class="bet-btn" data-bet="even">EVEN</button>
+          <button class="bet-btn" data-bet="low">LOW</button>
+          <button class="bet-btn" data-bet="high">HIGH</button>
+          <button class="bet-btn" data-bet="dozen1">1-12</button>
+          <button class="bet-btn" data-bet="dozen2">13-24</button>
+          <button class="bet-btn" data-bet="dozen3">25-36</button>
+        </div>
+        
+        <button id="spin-roulette-btn" class="spin-btn" style="width: 100%; margin-top: 10px;">SPIN WHEEL</button>
+        <div id="roulette-msg" class="ticker-box" style="margin-top: 10px;">SELECT A BET</div>
       </div>
     </div>
 

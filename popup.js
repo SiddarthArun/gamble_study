@@ -14,7 +14,8 @@ const TICKER_MESSAGES = [
 ];
 
 // Game State
-let gameMode = "slots"; // "slots" | "blackjack"
+let gameMode = "slots"; // "slots" | "blackjack" | "roulette"
+let selectedBet = null;
 let timerState = "IDLE";
 let endTime = 0;
 let studyMinutes = 0;
@@ -234,10 +235,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   modeSwitchBtn.addEventListener("click", () => {
     if (timerState !== "IDLE") return;
-    gameMode = gameMode === "slots" ? "blackjack" : "slots";
+    
+    if (gameMode === "slots") gameMode = "blackjack";
+    else if (gameMode === "blackjack") gameMode = "roulette";
+    else gameMode = "slots";
+
     modeSwitchBtn.textContent = `MODE: ${gameMode.toUpperCase()}`;
     slotsContainer.style.display = gameMode === "slots" ? "block" : "none";
     blackjackContainer.style.display = gameMode === "blackjack" ? "block" : "none";
+    document.getElementById("roulette-container").style.display = gameMode === "roulette" ? "block" : "none";
+    
     if (gameMode === "blackjack") startBlackjack();
   });
 
@@ -609,13 +616,95 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
-  blockToggle.addEventListener("change", (e) => {
-    blockMode = e.target.checked;
-    chrome.storage.local.set({ blockMode }, () => {
-        updateBlockRules();
-        updateStatusUI();
-    });
+  // ROULETTE LOGIC
+  const rouletteWheel = document.getElementById("roulette-wheel");
+  const rouletteMsg = document.getElementById("roulette-msg");
+  const spinRouletteBtn = document.getElementById("spin-roulette-btn");
+  const betBtns = document.querySelectorAll(".bet-btn");
+
+  betBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+          betBtns.forEach(b => b.classList.remove("selected"));
+          btn.classList.add("selected");
+          selectedBet = btn.dataset.bet;
+          rouletteMsg.textContent = `BET: ${btn.textContent}`;
+      });
   });
+
+  spinRouletteBtn.addEventListener("click", () => {
+      if (!selectedBet) {
+          rouletteMsg.textContent = "SELECT A BET!";
+          return;
+      }
+      spinRouletteBtn.disabled = true;
+      
+      // Reset wheel
+      rouletteWheel.classList.remove("red", "black", "green");
+      rouletteWheel.textContent = "...";
+      
+      // Animate wheel
+      const rotation = 360 * 5 + Math.floor(Math.random() * 360);
+      rouletteWheel.style.transform = `rotate(${rotation}deg)`;
+
+      setTimeout(() => {
+          const result = Math.floor(Math.random() * 37);
+          rouletteWheel.textContent = result;
+          
+          // Set color class
+          const color = result === 0 ? "green" : (result % 2 === 0 ? "red" : "black");
+          rouletteWheel.classList.add(color);
+          
+          processRouletteResult(result, color);
+          spinRouletteBtn.disabled = false;
+      }, 1500);
+  });
+
+  function processRouletteResult(result, color) {
+      let isWin = false;
+      
+      // Determine Win/Loss based on bet type
+      if (selectedBet === "red") isWin = color === "red";
+      else if (selectedBet === "black") isWin = color === "black";
+      else if (selectedBet === "odd") isWin = result !== 0 && result % 2 !== 0;
+      else if (selectedBet === "even") isWin = result !== 0 && result % 2 === 0;
+      else if (selectedBet === "low") isWin = result >= 1 && result <= 18;
+      else if (selectedBet === "high") isWin = result >= 19 && result <= 36;
+      else if (selectedBet === "dozen1") isWin = result >= 1 && result <= 12;
+      else if (selectedBet === "dozen2") isWin = result >= 13 && result <= 24;
+      else if (selectedBet === "dozen3") isWin = result >= 25 && result <= 36;
+
+      let study = 30, breakTime = 5;
+      
+      if (result === 0) {
+          // Green Zero Penalty
+          study = 90; breakTime = 0;
+          rouletteMsg.textContent = `HOUSE! 0 (Green)`;
+      } else if (isWin) {
+          // Win Payouts
+          if (["dozen1", "dozen2", "dozen3"].includes(selectedBet)) {
+            study = 20; breakTime = 15;
+          } else {
+            study = 25; breakTime = 10;
+          }
+          rouletteMsg.textContent = `WIN! ${result} (${color.toUpperCase()})`;
+      } else {
+          // Loss Penalties
+          if (["dozen1", "dozen2", "dozen3"].includes(selectedBet)) {
+            study = 60; breakTime = 0;
+          } else {
+            study = 45; breakTime = 0;
+          }
+          rouletteMsg.textContent = `LOSS! ${result} (${color.toUpperCase()})`;
+      }
+      
+      chrome.storage.local.set({
+        timerState: "STUDYING",
+        studyMinutes: study,
+        breakMinutes: breakTime,
+        endTime: Date.now() + (study * 60 * 1000)
+      });
+      logAction("GAMBLE", `Roulette: ${result} (${color}). Bet: ${selectedBet}. Result: ${isWin ? 'WIN' : 'LOSS'}`);
+  }
 
   blockForm.addEventListener("submit", (e) => {
     e.preventDefault();
