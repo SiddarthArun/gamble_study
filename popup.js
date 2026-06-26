@@ -682,17 +682,17 @@ document.addEventListener("DOMContentLoaded", () => {
       } else if (isWin) {
           // Win Payouts
           if (["dozen1", "dozen2", "dozen3"].includes(selectedBet)) {
-            study = 20; breakTime = 15;
+            study = 25; breakTime = 5;
           } else {
-            study = 25; breakTime = 10;
+            study = 50; breakTime = 10;
           }
           rouletteMsg.textContent = `WIN! ${result} (${color.toUpperCase()})`;
       } else {
           // Loss Penalties
           if (["dozen1", "dozen2", "dozen3"].includes(selectedBet)) {
-            study = 60; breakTime = 0;
+            study = 90; breakTime = 12;
           } else {
-            study = 45; breakTime = 0;
+            study = 50; breakTime = 10;
           }
           rouletteMsg.textContent = `LOSS! ${result} (${color.toUpperCase()})`;
       }
