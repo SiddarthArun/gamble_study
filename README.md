@@ -1,6 +1,6 @@
-# Study Roulette: Gamified High-Volatility Productivity
+# StudyBet: Gamified High-Volatility Productivity
 
-Study Roulette is a Chrome Extension that transforms the standard Pomodoro technique into a high-stakes, gamified productivity experience. Instead of just setting a timer, you bet your productivity on casino games, where the outcome dictates your focus intervals and break durations.
+StudyBet is a Chrome Extension that transforms the standard Pomodoro technique into a high-stakes, gamified productivity experience. Instead of just setting a timer, you bet your productivity on casino games, where the outcome dictates your focus intervals and break durations.
 
 ## Core Features
 
